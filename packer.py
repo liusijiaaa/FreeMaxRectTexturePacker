@@ -90,7 +90,11 @@ def pack_sprites(input_paths, output_name="atlas", max_size=2048):
     placements = []  # (name, x, y, w, h, image)
 
     def save_current_atlas(index, placements, used_width, used_height):
-        atlas_output_name = f"{output_name}_{index}"
+        if index > 0:
+            atlas_output_name = f"{output_name}_{index}"
+        else:
+            atlas_output_name = f"{output_name}"
+
         padded_width = align_to_multiple(used_width, 4)
         padded_height = align_to_multiple(used_height, 4)
 
