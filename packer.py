@@ -157,7 +157,9 @@ def write_tpsheet(output_name, placements, width, height):
         f.write("# https://www.codeandweb.com/texturepacker/unity\n\n")
         f.write(f"# $TexturePacker:SmartUpdate:{smart_hash}:0:0$\n")
         f.write(":format=40300\n")
-        f.write(f":texture={output_name}.png\n")
+        # 修改: 只使用文件名，去除路径部分
+        texture_name = os.path.basename(output_name)
+        f.write(f":texture={texture_name}.png\n")
         f.write(f":size={width}x{height}\n")
         f.write(":pivotpoints=enabled\n")
         f.write(":borders=disabled\n")
