@@ -67,8 +67,11 @@ def is_image_file(filepath):
     return os.path.splitext(filepath.lower())[1] in SUPPORTED_EXTS
 
 def get_unique_name(filepath, seen_names):
-    """生成唯一名称，避免重名（如多个 folder1/icon.png）"""
+    """生成唯一名称，避免重名（注意不同文件夹中不允许有相同命名的文件）"""
     name = os.path.splitext(os.path.basename(filepath))[0]
+    # 如果不同文件夹里有命名相同的文件，可以打开下面的代码
+    # rel_path = os.path.relpath(filepath).replace("\\", "/")
+    # name = os.path.splitext()[0]
     counter = 1
     original = name
     while name in seen_names:
