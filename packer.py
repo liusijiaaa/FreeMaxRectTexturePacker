@@ -68,8 +68,7 @@ def is_image_file(filepath):
 
 def get_unique_name(filepath, seen_names):
     """生成唯一名称，避免重名（如多个 folder1/icon.png）"""
-    rel_path = os.path.relpath(filepath).replace("\\", "/")
-    name = os.path.splitext(rel_path.replace("/", "_"))[0]
+    name = os.path.splitext(os.path.basename(filepath))[0]
     counter = 1
     original = name
     while name in seen_names:
