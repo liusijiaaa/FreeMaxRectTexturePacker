@@ -80,13 +80,14 @@ def get_unique_name(filepath, seen_names):
     seen_names.add(name)
     return name
 
-def pack_sprites(input_paths, output_name="atlas", max_size=2048):
+def pack_sprites(input_paths, output_name="atlas", max_size=2048, padding=1):
     images = load_images_from_folder_or_list(input_paths)
     if not images:
         print("❌ No images loaded.")
         return
 
     print(f"📦 Found {len(images)} images to pack.")
+    print(f"🔧 Padding: {padding} pixels")
 
     current_atlas_index = 0
     placements = []  # (name, x, y, w, h, image)
@@ -110,8 +111,8 @@ def pack_sprites(input_paths, output_name="atlas", max_size=2048):
         write_tpsheet(atlas_output_name, placements, padded_width, padded_height)
         print(f"✅ Metadata saved: {atlas_output_name}.tpsheet")
 
-    # 初始化 MaxRectsPacker
-    packer = MaxRectsPacker(max_size, max_size)
+    # 初始化 MaxRectsPacker，传入 padding 参数
+    packer = MaxRectsPacker(max_size, max_size, padding=padding)
 
     for name, img, w, h in images:
         if w > max_size or h > max_size:
@@ -127,7 +128,7 @@ def pack_sprites(input_paths, output_name="atlas", max_size=2048):
                 save_current_atlas(current_atlas_index, placements, used_width, used_height)
                 current_atlas_index += 1
                 placements = []
-                packer = MaxRectsPacker(max_size, max_size)
+                packer = MaxRectsPacker(max_size, max_size, padding=padding)
             else:
                 print(f"❌ Cannot fit even in empty atlas: {name} ({w}x{h})")
                 break
@@ -178,11 +179,12 @@ def write_tpsheet(output_name, placements, width, height):
 # ======================
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        print("Usage: python packer.py --input folder1/ folder2/ img1.png ... --output atlas_name")
+        print("Usage: python packer.py --input folder1/ folder2/ img1.png ... --output atlas_name [--padding pixels]")
         sys.exit(1)
 
     inputs = []
     output = "atlas"
+    padding = 0
     i = 1
     while i < len(sys.argv):
         if sys.argv[i] == "--input":
@@ -194,8 +196,15 @@ if __name__ == "__main__":
         if sys.argv[i] == "--output" and i + 1 < len(sys.argv):
             output = sys.argv[i + 1]
             i += 1
+        if sys.argv[i] == "--padding" and i + 1 < len(sys.argv):
+            try:
+                padding = int(sys.argv[i + 1])
+                i += 1
+            except ValueError:
+                print(f"❌ Invalid padding value: {sys.argv[i + 1]}, using default 0")
+                padding = 0
         i += 1
 
-    pack_sprites(inputs, output)
+    pack_sprites(inputs, output, padding=padding)
     # Run Like This:
-    # python packer.py --input assets/ --output game_ui
+    # python packer.py --input assets/ --output game_ui --padding 2
