@@ -2,21 +2,26 @@
 from typing import List, Optional, Tuple
 
 class MaxRectsPacker:
-    def __init__(self, width: int, height: int):
+    def __init__(self, width: int, height: int, padding: int = 1):
         self.width = width
         self.height = height
-        # 初始时整个区域为空闲
-        self.free_rects: List[Rect] = [Rect(0, 0, width, height)]
+        self.padding = padding
+        # 初始时整个区域为空闲（考虑padding）
+        self.free_rects: List[Rect] = [Rect(padding, padding, width - 2 * padding, height - 2 * padding)]
 
     def insert(self, w: int, h: int) -> Optional[Tuple[int, int]]:
         """尝试插入 w x h 的矩形，返回 (x, y)，失败返回 None"""
+        # 添加padding到矩形尺寸
+        padded_w = w + 2 * self.padding
+        padded_h = h + 2 * self.padding
+        
         best_rect = None
         best_score = float('inf')
 
         # 找到最适合的空闲矩形（最小面积浪费）
         for rect in self.free_rects:
-            if rect.w >= w and rect.h >= h:
-                score = rect.w * rect.h - w * h  # 剩余面积越小越好
+            if rect.w >= padded_w and rect.h >= padded_h:
+                score = rect.w * rect.h - padded_w * padded_h  # 剩余面积越小越好
                 if score < best_score:
                     best_score = score
                     best_rect = rect
@@ -30,11 +35,11 @@ class MaxRectsPacker:
         new_free = []
 
         # 右侧区域
-        if best_rect.w > w:
-            new_free.append(Rect(x + w, y, best_rect.w - w, h))
+        if best_rect.w > padded_w:
+            new_free.append(Rect(x + padded_w, y, best_rect.w - padded_w, padded_h))
         # 下方区域
-        if best_rect.h > h:
-            new_free.append(Rect(x, y + h, best_rect.w, best_rect.h - h))
+        if best_rect.h > padded_h:
+            new_free.append(Rect(x, y + padded_h, best_rect.w, best_rect.h - padded_h))
 
         # 移除已使用的矩形
         self.free_rects.remove(best_rect)
@@ -45,7 +50,8 @@ class MaxRectsPacker:
         # 合并重叠或相邻的空闲矩形（关键！减少碎片）
         self._merge_free_rects()
 
-        return x, y
+        # 返回实际内容区域的位置（去掉padding）
+        return x + self.padding, y + self.padding
 
     def _merge_free_rects(self):
         """合并可以合并的空闲矩形（水平或垂直）"""
